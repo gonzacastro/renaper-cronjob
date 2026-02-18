@@ -1,0 +1,47 @@
+name: RENAPER Tramite Check
+
+on:
+  schedule:
+    - cron: "0 * * * *"  # Cada hora
+  workflow_dispatch:       # Permite correrlo manualmente desde GitHub
+
+jobs:
+  check-tramite:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Install Playwright browsers
+        run: playwright install chromium --with-deps
+
+      - name: Restore state cache
+        uses: actions/cache@v4
+        with:
+          path: last_state.txt
+          key: renaper-state-${{ secrets.TRAMITE_ID }}
+          restore-keys: |
+            renaper-state-
+
+      - name: Run renaper check
+        env:
+          TRAMITE_ID: ${{ secrets.TRAMITE_ID }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
+        run: python renaper_check.py
+
+      - name: Save state cache
+        uses: actions/cache@v4
+        with:
+          path: last_state.txt
+          key: renaper-state-${{ secrets.TRAMITE_ID }}
