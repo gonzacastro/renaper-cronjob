@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+  "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.gonzalocastro.renaper-check</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/gonzalocastro/Documents/proyectos/cronjobs/run_local.sh</string>
+    </array>
+
+    <!-- Correr cada hora (3600 segundos) -->
+    <key>StartInterval</key>
+    <integer>3600</integer>
+
+    <!-- Si la Mac estaba apagada cuando debía correr, ejecutar al despertar -->
+    <key>RunAtLoad</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/Users/gonzalocastro/Documents/proyectos/cronjobs/launchd.log</string>
+
+    <key>StandardErrorPath</key>
+    <string>/Users/gonzalocastro/Documents/proyectos/cronjobs/launchd.log</string>
+</dict>
+</plist>

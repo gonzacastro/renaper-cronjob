@@ -2,3 +2,8 @@ last_state.txt
 *.pyc
 __pycache__/
 .env
+.venv/
+renaper_check.log
+launchd.log
+*.log.bak
+debug_screenshot.png

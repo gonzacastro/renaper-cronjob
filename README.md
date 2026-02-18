@@ -2,59 +2,71 @@
 
 Cron job que monitorea cada hora el estado de un trámite en [mitramite.renaper.gob.ar](https://mitramite.renaper.gob.ar/) y envía un email cuando el estado cambia.
 
-Corre automáticamente en **GitHub Actions** — no necesitás tener tu computadora prendida.
-
----
-
-## Setup
-
-### 1. Forkeá o cloná este repo en tu cuenta de GitHub
-
-### 2. Configurá los Secrets en GitHub
-
-Ir a: **Settings → Secrets and variables → Actions → New repository secret**
-
-| Secret | Descripción |
-|---|---|
-| `TRAMITE_ID` | ID del trámite a monitorear (ej: `00743721242`) |
-| `GMAIL_USER` | Tu dirección de Gmail (ej: `tucuenta@gmail.com`) |
-| `GMAIL_APP_PASSWORD` | App Password de Gmail (ver abajo) |
-| `NOTIFY_EMAIL` | Email donde recibir las notificaciones |
-
-#### Cómo generar un App Password de Gmail
-
-1. Ir a [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
-2. Seleccionar "Correo" y "Otro (nombre personalizado)"
-3. Escribir `renaper-checker` y hacer clic en Generar
-4. Copiar la contraseña de 16 caracteres → usarla como `GMAIL_APP_PASSWORD`
-
-> Nota: Necesitás tener la verificación en dos pasos activada en tu cuenta de Gmail.
-
-### 3. Activar GitHub Actions
-
-Una vez que hagas push, el workflow se activa automáticamente. También podés correrlo manualmente:
-
-1. Ir a la pestaña **Actions** en tu repositorio
-2. Seleccionar **RENAPER Tramite Check**
-3. Hacer clic en **Run workflow**
+Funciona desde tu propia Mac con **launchd** — sin depender de servicios cloud.
 
 ---
 
 ## Cómo funciona
 
-1. Cada hora, GitHub Actions corre `renaper_check.py`
-2. El script abre el sitio de RENAPER con Playwright (navegador headless)
-3. Ingresa el `TRAMITE_ID` en el formulario y extrae el estado
-4. Compara con el estado guardado en cache (`last_state.txt`)
-5. Si cambió → envía un email de notificación a `NOTIFY_EMAIL`
-6. Guarda el nuevo estado en cache para la próxima comparación
+1. Cada hora, `launchd` corre `run_local.sh`
+2. El script abre Chromium (headless) para obtener un token reCAPTCHA v3 válido
+3. Hace un POST directo a la API interna de RENAPER (`busqueda.php`) con el token
+4. Compara el estado con el guardado en `last_state.txt`
+5. Si cambió → envía un email a `NOTIFY_EMAIL`
+
+---
+
+## Instalación (una sola vez)
+
+```bash
+cd /Users/gonzalocastro/Documents/proyectos/cronjobs
+bash install.sh
+```
+
+El script instala automáticamente:
+- Virtualenv con Python y dependencias
+- Playwright + Chromium
+- El launchd job (cron de macOS)
+
+### Prerequisito: App Password de Gmail
+
+1. Ir a [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+2. Crear uno llamado `renaper-checker`
+3. Copiar la contraseña de 16 caracteres → `GMAIL_APP_PASSWORD` en el `.env`
+
+> Necesitás tener verificación en dos pasos activa en Gmail.
 
 ---
 
 ## Archivos
 
 ```
-.github/workflows/renaper-check.yml   # Workflow de GitHub Actions
+install.sh                              # Setup inicial (correr una vez)
+run_local.sh                           # Wrapper que carga .env y corre el script
 renaper_check.py                       # Script principal
 requirements.txt                       # Dependencias Python
+com.gonzalocastro.renaper-check.plist  # Configuración de launchd
+.env.example                           # Plantilla de variables de entorno
+.env                                   # Tus credenciales (no commiteado)
+```
+
+---
+
+## Comandos útiles
+
+```bash
+# Ver los logs en tiempo real
+tail -f renaper_check.log
+
+# Correr el script manualmente ahora
+bash run_local.sh
+
+# Ver si el job está activo
+launchctl list | grep renaper
+
+# Detener el job
+launchctl unload ~/Library/LaunchAgents/com.gonzalocastro.renaper-check.plist
+
+# Reactivar el job
+launchctl load ~/Library/LaunchAgents/com.gonzalocastro.renaper-check.plist
 ```
