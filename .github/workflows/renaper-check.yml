@@ -9,6 +9,9 @@ jobs:
   check-tramite:
     runs-on: ubuntu-latest
 
+    env:
+      TRAMITE_ID: ${{ secrets.TRAMITE_ID }}
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -37,20 +40,29 @@ jobs:
         uses: actions/cache@v4
         with:
           path: last_state.txt
-          key: renaper-state-${{ secrets.TRAMITE_ID }}
+          key: renaper-state-${{ env.TRAMITE_ID }}
           restore-keys: |
             renaper-state-
 
       - name: Run renaper check
         env:
-          TRAMITE_ID: ${{ secrets.TRAMITE_ID }}
           GMAIL_USER: ${{ secrets.GMAIL_USER }}
           GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
           NOTIFY_EMAIL: ${{ secrets.NOTIFY_EMAIL }}
         run: python renaper_check.py
 
+      - name: Upload debug screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-screenshot
+          path: debug_screenshot.png
+          if-no-files-found: ignore
+          retention-days: 3
+
       - name: Save state cache
-        uses: actions/cache@v4
+        if: always()
+        uses: actions/cache/save@v4
         with:
           path: last_state.txt
-          key: renaper-state-${{ secrets.TRAMITE_ID }}
+          key: renaper-state-${{ env.TRAMITE_ID }}
