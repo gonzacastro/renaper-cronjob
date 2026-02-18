@@ -8,6 +8,7 @@ on:
 jobs:
   check-tramite:
     runs-on: ubuntu-latest
+    environment: renaper-check
 
     env:
       TRAMITE_ID: ${{ secrets.TRAMITE_ID }}
