@@ -11,7 +11,8 @@ GMAIL_USER = os.environ["GMAIL_USER"]
 GMAIL_APP_PASSWORD = os.environ["GMAIL_APP_PASSWORD"]
 NOTIFY_EMAIL = os.environ["NOTIFY_EMAIL"]
 
-STATE_FILE = "last_state.txt"
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+STATE_FILE = os.path.join(SCRIPT_DIR, "last_state.txt")
 RENAPER_URL = "https://mitramite.renaper.gob.ar/"
 BUSQUEDA_URL = "https://mitramite.renaper.gob.ar/busqueda.php"
 RECAPTCHA_SITEKEY = "6Ld2mMAbAAAAAM9grHC4aJ6pJT1TtvUz04q4Fvjs"
